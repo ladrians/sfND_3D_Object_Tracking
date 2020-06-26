@@ -152,7 +152,59 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
 }
 
 
+static bool filter_box(DataFrame &frame, int idx, std::vector<int> &ids, bool found)
+{
+    int frame_size = frame.boundingBoxes.size();
+    cv::KeyPoint point = frame.keypoints[idx];
+    auto pt = cv::Point2f(point.pt.x, point.pt.y);
+    for (int i = 0; i < frame_size; i++)
+    {
+        if (frame.boundingBoxes[i].roi.contains(pt))
+        {
+            found = true;
+            ids.push_back(i);
+        }
+    }
+}
+
 void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bbBestMatches, DataFrame &prevFrame, DataFrame &currFrame)
 {
-    // ...
+    int previous_frame_size = prevFrame.boundingBoxes.size();
+    int current_frame_size = currFrame.boundingBoxes.size();
+    int match_array[previous_frame_size][current_frame_size];
+
+	for (auto it = matches.begin(); it != matches.end(); ++it)
+    {
+        bool query_found = false;
+        bool train_found = false;
+        std::vector<int> query_ids, train_ids;
+
+        filter_box(prevFrame, it->queryIdx, query_ids, query_found);
+        filter_box(currFrame, it->trainIdx, train_ids, train_found);
+
+        if (query_found && train_found)
+        {
+            for (auto id_prev: query_ids)
+            {
+                for (auto id_curr: train_ids)
+                {
+                    match_array[id_prev][id_curr] += 1;
+                }
+            }
+        }
+    }
+    for (int i = 0; i < previous_frame_size; i++)
+    {
+        int max_count = 0;
+        int id_max = 0;
+        for (int j = 0; j < current_frame_size; j++)
+        {
+            if (match_array[i][j] > max_count)
+            {
+                max_count = match_array[i][j];
+                id_max = j;
+            }
+        }
+        bbBestMatches[i] = id_max;
+    }
 }
