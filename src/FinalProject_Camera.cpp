@@ -70,7 +70,7 @@ int main(int argc, const char *argv[])
 
     // misc
     double sensorFrameRate = 10.0 / imgStepWidth; // frames per second for Lidar and camera
-    int dataBufferSize = 2;       // no. of images which are held in memory (ring buffer) at the same time
+    int dataBufferSize = 3;//2; // no. of images which are held in memory (ring buffer) at the same time
     vector<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
     bool bVis = false;            // visualize results
 
@@ -100,8 +100,11 @@ int main(int argc, const char *argv[])
                 // push image into data frame buffer
                 DataFrame frame;
                 frame.cameraImg = img;
+                if (dataBuffer.size() >= dataBufferSize)
+                {
+                    dataBuffer.erase(dataBuffer.begin());
+                }
                 dataBuffer.push_back(frame);
-
                 cout << "#1 : LOAD IMAGE INTO BUFFER done" << endl;
 
 
@@ -146,10 +149,6 @@ int main(int argc, const char *argv[])
                 bVis = false;
 
                 cout << "#4 : CLUSTER LIDAR POINT CLOUD done" << endl;
-
-
-                // REMOVE THIS LINE BEFORE PROCEEDING WITH THE FINAL PROJECT
-                //continue; // skips directly to the next image without processing what comes beneath
 
                 /* DETECT IMAGE KEYPOINTS */
 
@@ -227,13 +226,19 @@ int main(int argc, const char *argv[])
                     /* MATCH KEYPOINT DESCRIPTORS */
 
                     vector<cv::DMatch> matches;
-                    string matcherType = "MAT_BF";        // MAT_BF, MAT_FLANN
-                    string descriptorType = "DES_BINARY"; // DES_BINARY, DES_HOG
-                    string selectorType = "SEL_NN";       // SEL_NN, SEL_KNN
+                    //string matcherType = "MAT_BF";        // MAT_BF, MAT_FLANN
+                    //string descriptorType = "DES_BINARY"; // DES_BINARY, DES_HOG
+                    //string selectorType = "SEL_NN";       // SEL_NN, SEL_KNN
+                    vector<string> matcherTypes = {"MAT_BF", "MAT_FLANN"};
+                    vector<string> descriptorTypes = {"DES_BINARY", "DES_HOG"};
+                    vector<string> selectorTypes = {"SEL_NN", "SEL_KNN"};
+                    string matcherType = matcherTypes.at(0);
+                    string descriptorType1 = (descriptorType.compare("SIFT") == 0?descriptorTypes.at(1):descriptorTypes.at(0));
+                    string selectorType = selectorTypes.at(1);
 
                     matchDescriptors((dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints,
                                     (dataBuffer.end() - 2)->descriptors, (dataBuffer.end() - 1)->descriptors,
-                                    matches, descriptorType, matcherType, selectorType);
+                                    matches, descriptorType1, matcherType, selectorType);
 
                     // store matches in current data frame
                     (dataBuffer.end() - 1)->kptMatches = matches;
@@ -306,7 +311,7 @@ int main(int argc, const char *argv[])
                                 sprintf(str, "TTC Lidar : %f s, TTC Camera : %f s", ttcLidar, ttcCamera);
                                 putText(visImg, str, cv::Point2f(80, 50), cv::FONT_HERSHEY_PLAIN, 2, cv::Scalar(0,0,255));
 
-                                string windowName = "Final Results : TTC";
+                                string windowName = detectorType + "/" + descriptorType + " TTC";
                                 cv::namedWindow(windowName, 4);
                                 cv::imshow(windowName, visImg);
                                 cout << "Press key to continue to next frame" << endl;
