@@ -148,7 +148,36 @@ void computeTTCCamera(std::vector<cv::KeyPoint> &kptsPrev, std::vector<cv::KeyPo
 void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
                      std::vector<LidarPoint> &lidarPointsCurr, double frameRate, double &TTC)
 {
-    // ...
+    // Initial code from 03.02 section
+
+    // auxiliary variables
+    double dT = 1 / frameRate; // time between two measurements in seconds
+    double laneWidth = 4.0; // assumed width of the ego lane
+
+    // find closest distance to Lidar points
+    double minXPrev = 0, minXCurr = 0;
+    int countXPrev = 0, countXCurr = 0;
+    for(auto it=lidarPointsPrev.begin(); it != lidarPointsPrev.end(); ++it)
+    {
+        if (abs(it->y) <= laneWidth / 2.0)
+        { // 3D point within ego lane?
+            minXPrev += it->x;
+            countXPrev++;
+        }
+    }
+    minXPrev = countXPrev>0? minXPrev / countXPrev : 0;
+
+    for(auto it=lidarPointsCurr.begin(); it != lidarPointsCurr.end(); ++it)
+    {
+        if (abs(it->y) <= laneWidth / 2.0)
+        { // 3D point within ego lane?
+            minXCurr += it->x;
+            countXCurr++;
+        }
+    }
+    minXCurr = countXCurr>0? minXCurr / countXCurr : 0;
+    // compute TTC from both measurements
+    TTC = minXCurr * dT / (minXPrev-minXCurr);
 }
 
 
