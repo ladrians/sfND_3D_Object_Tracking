@@ -133,7 +133,23 @@ void show3DObjects(std::vector<BoundingBox> &boundingBoxes, cv::Size worldSize, 
 // associate a given bounding box with the keypoints it contains
 void clusterKptMatchesWithROI(BoundingBox &boundingBox, std::vector<cv::KeyPoint> &kptsPrev, std::vector<cv::KeyPoint> &kptsCurr, std::vector<cv::DMatch> &kptMatches)
 {
-    // ...
+    // Based on 06.04
+    float shrinkFactor = 0.10;
+    // adjust the size of the ROI slightly so that the number of points which are not physically located on the object is reduced
+    for(auto it = kptMatches.begin(); it != kptMatches.end(); ++it)
+    {
+        cv::KeyPoint kp = kptsCurr.at(it->trainIdx);
+        // shrink current bounding box slightly to avoid having too many outlier points around the edges
+        cv::Rect smallerBox;
+        smallerBox.x = boundingBox.roi.x + shrinkFactor * boundingBox.roi.width / 2.0;
+        smallerBox.y = boundingBox.roi.y + shrinkFactor * boundingBox.roi.height / 2.0;
+        smallerBox.width = boundingBox.roi.width * (1 - shrinkFactor);
+        smallerBox.height = boundingBox.roi.height * (1 - shrinkFactor);
+        if (smallerBox.contains(cv::Point(kp.pt.x, kp.pt.y)))
+        {
+            boundingBox.kptMatches.push_back(*it);
+        }
+    }
 }
 
 
