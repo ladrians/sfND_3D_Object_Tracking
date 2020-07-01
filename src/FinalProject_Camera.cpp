@@ -22,6 +22,29 @@
 
 using namespace std;
 
+void AnnotateImage(cv::Mat &visImg, BoundingBox *currBB,
+        cv::Mat &P_rect_00, cv::Mat &R_rect_00, cv::Mat &RT,
+        double ttcLidar, double ttcCamera)
+{
+    showLidarImgOverlay(visImg, currBB->lidarPoints, P_rect_00, R_rect_00, RT, &visImg);
+    cv::rectangle(visImg, cv::Point(currBB->roi.x, currBB->roi.y), cv::Point(currBB->roi.x + currBB->roi.width, currBB->roi.y + currBB->roi.height), cv::Scalar(0, 255, 0), 2);
+
+    char str[200];
+    sprintf(str, "TTC Lidar : %f s, TTC Camera : %f s", ttcLidar, ttcCamera);
+    putText(visImg, str, cv::Point2f(80, 50), cv::FONT_HERSHEY_PLAIN, 2, cv::Scalar(0,0,255));
+}
+
+void SaveImage(cv::Mat &visImg,
+        string detectorType, string descriptorType,
+        string imgSaveBasePath, string imgNumber, string imgFileType)
+{
+    string prefix = detectorType + "_" + descriptorType + "_";
+
+    string saveImgFullFilename = imgSaveBasePath + prefix + imgNumber + imgFileType;
+    const char *cp_saveImgFullFilename = saveImgFullFilename.c_str();
+    cv::imwrite(cp_saveImgFullFilename, visImg);
+}
+
 /* MAIN PROGRAM */
 int main(int argc, const char *argv[])
 {
@@ -73,6 +96,8 @@ int main(int argc, const char *argv[])
     int dataBufferSize = 3;//2; // no. of images which are held in memory (ring buffer) at the same time
     vector<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
     bool bVis = false;            // visualize results
+    bool bSaveFile = true; // Save output to file
+    string imgSaveBasePath = imgBasePath + "images/";
 
     vector<string> detector_types = {"SHITOMASI", "HARRIS", "FAST", "BRISK", "ORB", "AKAZE", "SIFT"};
     vector<string> descriptor_types = {"BRISK", "BRIEF", "ORB", "FREAK", "AKAZE", "SIFT"};
@@ -82,6 +107,7 @@ int main(int argc, const char *argv[])
         for (string descriptorType:descriptor_types)
         {
             dataBuffer.clear();
+            cout << detectorType << "/" << descriptorType << endl;
 
             /* MAIN LOOP OVER ALL IMAGES */
 
@@ -130,7 +156,12 @@ int main(int argc, const char *argv[])
                 cropLidarPoints(lidarPoints, minX, maxX, maxY, minZ, maxZ, minR);
 
                 (dataBuffer.end() - 1)->lidarPoints = lidarPoints;
-
+                //bVis = true;
+                if(bVis)
+                {
+                    showLidarTopview(lidarPoints, cv::Size(4.0, 20.0), cv::Size(2000, 2000), true);
+                }
+                bVis = false;
                 cout << "#3 : CROP LIDAR POINTS done" << endl;
 
 
@@ -259,6 +290,7 @@ int main(int argc, const char *argv[])
 
                     cout << "#8 : TRACK 3D OBJECT BOUNDING BOXES done" << endl;
 
+                    bSaveFile = true;
 
                     /* COMPUTE TTC ON OBJECT IN FRONT */
 
@@ -300,16 +332,11 @@ int main(int argc, const char *argv[])
                             computeTTCCamera((dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints, currBB->kptMatches, sensorFrameRate, ttcCamera);
                             //// EOF STUDENT ASSIGNMENT
 
-                            bVis = true;
+                            //bVis = true;
                             if (bVis)
                             {
                                 cv::Mat visImg = (dataBuffer.end() - 1)->cameraImg.clone();
-                                showLidarImgOverlay(visImg, currBB->lidarPoints, P_rect_00, R_rect_00, RT, &visImg);
-                                cv::rectangle(visImg, cv::Point(currBB->roi.x, currBB->roi.y), cv::Point(currBB->roi.x + currBB->roi.width, currBB->roi.y + currBB->roi.height), cv::Scalar(0, 255, 0), 2);
-
-                                char str[200];
-                                sprintf(str, "TTC Lidar : %f s, TTC Camera : %f s", ttcLidar, ttcCamera);
-                                putText(visImg, str, cv::Point2f(80, 50), cv::FONT_HERSHEY_PLAIN, 2, cv::Scalar(0,0,255));
+                                AnnotateImage(visImg, currBB, P_rect_00, R_rect_00, RT, ttcLidar, ttcCamera);
 
                                 string windowName = detectorType + "/" + descriptorType + " TTC";
                                 cv::namedWindow(windowName, 4);
@@ -318,7 +345,13 @@ int main(int argc, const char *argv[])
                                 cv::waitKey(0);
                             }
                             bVis = false;
-
+                            if (bSaveFile)
+                            {
+                                cv::Mat visImg = (dataBuffer.end() - 1)->cameraImg.clone();
+                                AnnotateImage(visImg, currBB, P_rect_00, R_rect_00, RT, ttcLidar, ttcCamera);
+                                SaveImage(visImg, detectorType, descriptorType, imgSaveBasePath, imgNumber.str(), imgFileType);
+                            }
+                            bSaveFile = false; // Save only 1 image by detector/descriptor combination
                         } // eof TTC computation
                     } // eof loop over all BB matches
 
