@@ -43,6 +43,7 @@ void SaveImage(cv::Mat &visImg,
     string saveImgFullFilename = imgSaveBasePath + prefix + imgNumber + imgFileType;
     const char *cp_saveImgFullFilename = saveImgFullFilename.c_str();
     cv::imwrite(cp_saveImgFullFilename, visImg);
+    //cout << "Saving " << cp_saveImgFullFilename << endl;
 }
 
 /* MAIN PROGRAM */
@@ -97,10 +98,12 @@ int main(int argc, const char *argv[])
     vector<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
     bool bVis = false;            // visualize results
     bool bSaveFile = true; // Save output to file
-    string imgSaveBasePath = imgBasePath + "images/";
+    string imgSaveBasePath = imgBasePath;
 
     vector<string> detector_types = {"SHITOMASI", "HARRIS", "FAST", "BRISK", "ORB", "AKAZE", "SIFT"};
     vector<string> descriptor_types = {"BRISK", "BRIEF", "ORB", "FREAK", "AKAZE", "SIFT"};
+
+    double total_t = (double)cv::getTickCount();
 
     for (string detectorType:detector_types)
     {
@@ -131,7 +134,7 @@ int main(int argc, const char *argv[])
                     dataBuffer.erase(dataBuffer.begin());
                 }
                 dataBuffer.push_back(frame);
-                cout << "#1 : LOAD IMAGE INTO BUFFER done" << endl;
+                //cout << "#1 : LOAD IMAGE INTO BUFFER done" << endl;
 
 
                 /* DETECT & CLASSIFY OBJECTS */
@@ -141,7 +144,7 @@ int main(int argc, const char *argv[])
                 detectObjects((dataBuffer.end() - 1)->cameraImg, (dataBuffer.end() - 1)->boundingBoxes, confThreshold, nmsThreshold,
                             yoloBasePath, yoloClassesFile, yoloModelConfiguration, yoloModelWeights, bVis);
 
-                cout << "#2 : DETECT & CLASSIFY OBJECTS done" << endl;
+                //cout << "#2 : DETECT & CLASSIFY OBJECTS done" << endl;
 
 
                 /* CROP LIDAR POINTS */
@@ -162,7 +165,7 @@ int main(int argc, const char *argv[])
                     showLidarTopview(lidarPoints, cv::Size(4.0, 20.0), cv::Size(2000, 2000), true);
                 }
                 bVis = false;
-                cout << "#3 : CROP LIDAR POINTS done" << endl;
+                //cout << "#3 : CROP LIDAR POINTS done" << endl;
 
 
                 /* CLUSTER LIDAR POINT CLOUD */
@@ -179,7 +182,7 @@ int main(int argc, const char *argv[])
                 }
                 bVis = false;
 
-                cout << "#4 : CLUSTER LIDAR POINT CLOUD done" << endl;
+                //cout << "#4 : CLUSTER LIDAR POINT CLOUD done" << endl;
 
                 /* DETECT IMAGE KEYPOINTS */
 
@@ -236,7 +239,7 @@ int main(int argc, const char *argv[])
                 // push keypoints and descriptor for current frame to end of data buffer
                 (dataBuffer.end() - 1)->keypoints = keypoints;
 
-                cout << "#5 : DETECT KEYPOINTS done" << endl;
+                //cout << "#5 : DETECT KEYPOINTS done" << endl;
 
 
                 /* EXTRACT KEYPOINT DESCRIPTORS */
@@ -248,7 +251,7 @@ int main(int argc, const char *argv[])
                 // push descriptors for current frame to end of data buffer
                 (dataBuffer.end() - 1)->descriptors = descriptors;
 
-                cout << "#6 : EXTRACT DESCRIPTORS done" << endl;
+                //cout << "#6 : EXTRACT DESCRIPTORS done" << endl;
 
 
                 if (dataBuffer.size() > 1) // wait until at least two images have been processed
@@ -274,7 +277,7 @@ int main(int argc, const char *argv[])
                     // store matches in current data frame
                     (dataBuffer.end() - 1)->kptMatches = matches;
 
-                    cout << "#7 : MATCH KEYPOINT DESCRIPTORS done" << endl;
+                    //cout << "#7 : MATCH KEYPOINT DESCRIPTORS done" << endl;
 
 
                     /* TRACK 3D OBJECT BOUNDING BOXES */
@@ -288,7 +291,7 @@ int main(int argc, const char *argv[])
                     // store matches in current data frame
                     (dataBuffer.end()-1)->bbMatches = bbBestMatches;
 
-                    cout << "#8 : TRACK 3D OBJECT BOUNDING BOXES done" << endl;
+                    //cout << "#8 : TRACK 3D OBJECT BOUNDING BOXES done" << endl;
 
                     bSaveFile = true;
 
@@ -360,5 +363,8 @@ int main(int argc, const char *argv[])
             } // eof loop over all images
         } // eof descriptorType
     } // eof detectorType
+
+    total_t = ((double)cv::getTickCount() - total_t) / cv::getTickFrequency();
+    cout << "Time " << total_t << " seconds" << endl;
     return 0;
 }
