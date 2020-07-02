@@ -15,22 +15,35 @@ The objective is to detect objects in an image using the YOLO deep-learning fram
 ## Basic Build Instructions
 
 1. Clone this repo.
-2. Make a build directory in the top level project directory: `mkdir build && cd build`.
-3. Download the [yolov3.weights](https://pjreddie.com/media/files/yolov3.weights) file to `/dat/yolo/`.
-4. Compile: `cmake .. && make`.
-5. Run it: `./3D_object_tracking`.
+2. Check [dependencies for running locally](https://github.com/udacity/SFND_3D_Object_Tracking#dependencies-for-running-locally).
+3. Make a `build` directory in the top level project directory: `mkdir build && cd build`.
+4. Download the [yolov3.weights](https://pjreddie.com/media/files/yolov3.weights) file to the `/dat/yolo/` folder.
+5. Compile: `cmake .. && make`.
+6. Run it: `./3D_object_tracking`.
 
 ### Match 3D Objects
 
+Initially the YOLO deep-learning framework will classify the detections on the scene:
+
+![YOLO sample](./images/./images/objectclassification01.png)
+
 `FP.1` implements the method `matchBoundingBoxes`, which takes as input both the previous and the current data frames and provides as output the ids of the matched regions of interest (i.e. the boxID property); the matches are the ones with the highest number of keypoint correspondences.
+
+![Detection sample](./images/detect01.png)
 
 ### Compute Lidar-based TTC
 
 `FP.2` compute the time-to-collision in second for all matched 3D objects using only Lidar measurements from the matched bounding boxes between current and previous frame.
 
+![Birds eye view sample](./images/birdseyeview01.png)
+
 ### Associate Keypoint Correspondences with Bounding Boxes
 
 `FP.3` prepares the TTC computation based on camera measurements by associating keypoint correspondences to the bounding boxes which enclose them. All matches which satisfy this condition are added to a vector in the respective bounding box.
+
+Analyzing the images, the detection ranges starting from [7.97m](./images/3d_object_detect01.png) to [6.81m](./images/3d_object_detect03.png) as they approach the semaphore with red light, for example:
+
+![3D object detection](./images/3d_object_detect02.png)
 
 Notice that outlier matches have been removed based on the euclidean distance between them in relation to all the matches in the bounding box.
 
@@ -65,33 +78,35 @@ Detailed execution by descriptor / detector can be checked on the [images folder
 
 |Detector/Descriptor|Camera TTC|Lidar TTC|Image sample|
 |---|---|---|---|
-|SHITOMASI/BRISK| | |[sample](./images/SHITOMASI_BRISK_0016.png)|
-|SHITOMASI/BRIEF| | |[sample](./images/SHITOMASI_BRIEF_0016.png)|
-|SHITOMASI/ORB| | |[sample](./images/SHITOMASI_ORB_0016.png)|
-|SHITOMASI/FREAK| | |[sample](./images/SHITOMASI_FREAK_0016.png)|
-|SHITOMASI/SIFT| | |[sample](./images/SHITOMASI_SIFT_0016.png)|
-|HARRIS/BRISK| | |[sample](./images/HARRIS_BRISK_0016.png)|
-|HARRIS/BRIEF| | |[sample](./images/HARRIS_BRIEF_0016.png)|
-|HARRIS/ORB| | |[sample](./images/HARRIS_ORB_0016.png)|
-|HARRIS/FREAK| | |[sample](./images/HARRIS_FREAK_0016.png)|
-|HARRIS/SIFT| | |[sample](./images/HARRIS_SIFT_0016.png)|
-|FAST/BRISK| | |[sample](./images/FAST_BRISK_0016.png)|
-|FAST/BRIEF| | |[sample](./images/FAST_BRIEF_0016.png)|
-|FAST/ORB| | |[sample](./images/FAST_ORB_0016.png)|
-|FAST/FREAK| | |[sample](./images/FAST_FREAK_0016.png)|
-|FAST/SIFT| | |[sample](./images/FAST_SIFT_0016.png)|
-|BRISK/BRISK| | |[sample](./images/BRISK_BRISK_0016.png)|
-|BRISK/BRIEF| | |[sample](./images/BRISK_BRIEF_0016.png)|
-|BRISK/ORB| | |[sample](./images/BRISK_ORB_0016.png)|
-|BRISK/FREAK| | |[sample](./images/BRISK_FREAK_0016.png)|
-|BRISK/SIFT| | |[sample](./images/BRISK_SIFT_0016.png)|
-|ORB/BRISK| | |[sample](./images/ORB_BRISK_0016.png)|
-|ORB/BRIEF| | |[sample](./images/ORB_BRIEF_0016.png)|
-|ORB/ORB| | |[sample](./images/ORB_ORB_0016.png)|
-|ORB/FREAK| | |[sample](./images/ORB_FREAK_0016.png)|
-|ORB/SIFT| | |[sample](./images/ORB_SIFT_0016.png)|
-|AKAZE/AKAZE| | |[sample](./images/AKAZE_AKAZE_0016.png)|
-|SIFT/BRISK| | |[sample](./images/SIFT_BRISK_0016.png)|
-|SIFT/BRIEF| | |[sample](./images/SIFT_BRIEF_0016.png)|
-|SIFT/FREAK| | |[sample](./images/SIFT_FREAK_0016.png)|
-|SIFT/SIFT| | |[sample](./images/SIFT_SIFT_0016.png)|
+|SHITOMASI/BRISK|8.898673|10.845162|[sample](./images/SHITOMASI_BRISK_0016.png)|
+|SHITOMASI/BRIEF|8.898673|11.795735|[sample](./images/SHITOMASI_BRIEF_0016.png)|
+|SHITOMASI/ORB|8.898673|11.203624|[sample](./images/SHITOMASI_ORB_0016.png)|
+|SHITOMASI/FREAK|8.898673|10.716109|[sample](./images/SHITOMASI_FREAK_0016.png)|
+|SHITOMASI/SIFT|8.898673|10.210745|[sample](./images/SHITOMASI_SIFT_0016.png)|
+|HARRIS/BRISK|8.898673|6.338662|[sample](./images/HARRIS_BRISK_0016.png)|
+|HARRIS/BRIEF|8.898673|7.291746|[sample](./images/HARRIS_BRIEF_0016.png)|
+|HARRIS/ORB|8.898673|6.603384|[sample](./images/HARRIS_ORB_0016.png)|
+|HARRIS/FREAK|8.898673|6.457490|[sample](./images/HARRIS_FREAK_0016.png)|
+|HARRIS/SIFT|8.898673|7.291746|[sample](./images/HARRIS_SIFT_0016.png)|
+|FAST/BRISK|8.898673|11.487338|[sample](./images/FAST_BRISK_0016.png)|
+|FAST/BRIEF|8.898673|11.218021|[sample](./images/FAST_BRIEF_0016.png)|
+|FAST/ORB|8.898673|11.220639|[sample](./images/FAST_ORB_0016.png)|
+|FAST/FREAK|8.898673|12.261320|[sample](./images/FAST_FREAK_0016.png)|
+|FAST/SIFT|8.898673|11.214223|[sample](./images/FAST_SIFT_0016.png)|
+|BRISK/BRISK|8.898673|10.804131|[sample](./images/BRISK_BRISK_0016.png)|
+|BRISK/BRIEF|8.898673|9.468606|[sample](./images/BRISK_BRIEF_0016.png)|
+|BRISK/ORB|8.898673|10.458415|[sample](./images/BRISK_ORB_0016.png)|
+|BRISK/FREAK|8.898673|9.851232|[sample](./images/BRISK_FREAK_0016.png)|
+|BRISK/SIFT|8.898673|10.956527|[sample](./images/BRISK_SIFT_0016.png)|
+|ORB/BRISK|8.898673|9.760500|[sample](./images/ORB_BRISK_0016.png)|
+|ORB/BRIEF|8.898673|12.709675|[sample](./images/ORB_BRIEF_0016.png)|
+|ORB/ORB|8.898673|9.370819|[sample](./images/ORB_ORB_0016.png)|
+|ORB/FREAK|8.898673|7.318464|[sample](./images/ORB_FREAK_0016.png)|
+|ORB/SIFT|8.898673|8.345127|[sample](./images/ORB_SIFT_0016.png)|
+|AKAZE/AKAZE|8.898673|9.101661|[sample](./images/AKAZE_AKAZE_0016.png)|
+|SIFT/BRISK|8.898673|8.710034|[sample](./images/SIFT_BRISK_0016.png)|
+|SIFT/BRIEF|8.898673|9.090199|[sample](./images/SIFT_BRIEF_0016.png)|
+|SIFT/FREAK|8.898673|8.520908|[sample](./images/SIFT_FREAK_0016.png)|
+|SIFT/SIFT|8.898673|8.944497|[sample](./images/SIFT_SIFT_0016.png)|
+
+TODO: check values again...
