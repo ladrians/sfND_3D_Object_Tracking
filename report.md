@@ -25,7 +25,7 @@ The objective is to detect objects in an image using the YOLO deep-learning fram
 
 Initially the YOLO deep-learning framework will classify the detections on the scene:
 
-![YOLO sample](./images/./images/objectclassification01.png)
+![YOLO sample](./images/objectclassification01.png)
 
 `FP.1` implements the method `matchBoundingBoxes`, which takes as input both the previous and the current data frames and provides as output the ids of the matched regions of interest (i.e. the boxID property); the matches are the ones with the highest number of keypoint correspondences.
 
@@ -108,5 +108,3 @@ Detailed execution by descriptor / detector can be checked on the [images folder
 |SIFT/BRIEF|8.898673|9.090199|[sample](./images/SIFT_BRIEF_0016.png)|
 |SIFT/FREAK|8.898673|8.520908|[sample](./images/SIFT_FREAK_0016.png)|
 |SIFT/SIFT|8.898673|8.944497|[sample](./images/SIFT_SIFT_0016.png)|
-
-TODO: check values again...
