@@ -97,11 +97,18 @@ int main(int argc, const char *argv[])
     int dataBufferSize = 3;//2; // no. of images which are held in memory (ring buffer) at the same time
     vector<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
     bool bVis = false;            // visualize results
-    bool bSaveFile = true; // Save output to file
+    bool bSaveFile = false; // Save output to file
     string imgSaveBasePath = imgBasePath;
 
     vector<string> detector_types = {"SHITOMASI", "HARRIS", "FAST", "BRISK", "ORB", "AKAZE", "SIFT"};
     vector<string> descriptor_types = {"BRISK", "BRIEF", "ORB", "FREAK", "AKAZE", "SIFT"};
+
+    //// Use for debugging a specific detector/descriptor combination
+    //detector_types = {"AKAZE"};
+    //descriptor_types = {"AKAZE"};
+    //// Debug a specific image
+    //imgStartIndex = 12;
+    //imgEndIndex = 13;
 
     double total_t = (double)cv::getTickCount();
 
@@ -141,8 +148,10 @@ int main(int argc, const char *argv[])
 
                 float confThreshold = 0.2;
                 float nmsThreshold = 0.4;
+                //bVis = true;
                 detectObjects((dataBuffer.end() - 1)->cameraImg, (dataBuffer.end() - 1)->boundingBoxes, confThreshold, nmsThreshold,
                             yoloBasePath, yoloClassesFile, yoloModelConfiguration, yoloModelWeights, bVis);
+                //bVis = false;
 
                 //cout << "#2 : DETECT & CLASSIFY OBJECTS done" << endl;
 
@@ -164,7 +173,7 @@ int main(int argc, const char *argv[])
                 {
                     showLidarTopview(lidarPoints, cv::Size(4.0, 20.0), cv::Size(2000, 2000), true);
                 }
-                bVis = false;
+                //bVis = false;
                 //cout << "#3 : CROP LIDAR POINTS done" << endl;
 
 
@@ -178,9 +187,9 @@ int main(int argc, const char *argv[])
                 //bVis = true;
                 if(bVis)
                 {
-                    show3DObjects((dataBuffer.end()-1)->boundingBoxes, cv::Size(4.0, 20.0), cv::Size(2000, 2000), true);
+                    show3DObjects((dataBuffer.end()-1)->boundingBoxes, cv::Size(4.0, 10.0), cv::Size(500, 500), true);
                 }
-                bVis = false;
+                //bVis = false;
 
                 //cout << "#4 : CLUSTER LIDAR POINT CLOUD done" << endl;
 
@@ -211,7 +220,7 @@ int main(int argc, const char *argv[])
 
                 if (detectorType.compare("SHITOMASI") == 0)
                 {
-                    detKeypointsShiTomasi(keypoints, imgGray, false);
+                    detKeypointsShiTomasi(keypoints, imgGray, bVis);
                 }
                 else if (detectorType.compare("HARRIS") == 0)
                 {
