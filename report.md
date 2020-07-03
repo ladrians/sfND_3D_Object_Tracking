@@ -29,27 +29,51 @@ Initially the YOLO deep-learning framework will classify the detections on the s
 
 `FP.1` implements the method `matchBoundingBoxes`, which takes as input both the previous and the current data frames and provides as output the ids of the matched regions of interest (i.e. the boxID property); the matches are the ones with the highest number of keypoint correspondences.
 
+Steps followed:
+
+ * Create an internal int array `match_array` to accumulate the filtered points contained in both frames.
+ * Get the maximum values for that matrix and assign the corresponding matches on the reference `bbBestMatches` variable.
+
 ![Detection sample](./images/detect01.png)
 
 ### Compute Lidar-based TTC
 
-`FP.2` compute the time-to-collision in second for all matched 3D objects using only Lidar measurements from the matched bounding boxes between current and previous frame.
+`FP.2` computes the time-to-collision in second for all matched 3D objects using only Lidar measurements from the matched bounding boxes between current and previous frame. The initial code uses the reference from `03.02` section; a sample `Birds eye view` image:
 
 ![Birds eye view sample](./images/birdseyeview01.png)
+
+Steps followed:
+
+ * Find the closest distance to Lidar points for each frame, making sure the 3D point are within the ego lane.
+ * Prevent division by zero.
+ * Compute the time-to-collision (TTC) from both measurements.
 
 ### Associate Keypoint Correspondences with Bounding Boxes
 
 `FP.3` prepares the TTC computation based on camera measurements by associating keypoint correspondences to the bounding boxes which enclose them. All matches which satisfy this condition are added to a vector in the respective bounding box.
 
-Analyzing the images, the detection ranges starting from [7.97m](./images/3d_object_detect01.png) to [6.81m](./images/3d_object_detect03.png) as they approach the semaphore with red light, for example:
+Analyzing the correspondences between images, the detection ranges starting from [7.97m](./images/3d_object_detect01.png) to [6.81m](./images/3d_object_detect03.png); it makes sense as the images show that the behicles are approaching a red semaphore so they are decelerating:
 
 ![3D object detection](./images/3d_object_detect02.png)
 
 Notice that outlier matches have been removed based on the euclidean distance between them in relation to all the matches in the bounding box.
 
+Based on section `06.04`:
+
+ * Slightly adjust the size of the ROI so that the number of points which are not physically located on the object is reduced, taken a 10% `shrinkFactor` to avoid having too many outlier points around the edges.
+ * Associate the resulting bounding box with the filtered matches.
+
 ### Compute Camera-based TTC
 
 `FP.4` compute the time-to-collision in second for all matched 3D objects using only keypoint correspondences from the matched bounding boxes between current and previous frame.
+
+Based on section `03.03`:
+
+ * Compute the distance ratios between all matched keypoints using a `distRatios` vector.
+ * Consider the minimum required distance; `10cm`.
+ * Calculate the euclidean distance and ratios avoiding division by zero.
+ * Calculate the median distance ratio to remove outlier influence.
+ * Compute time-to-collision (TTC) based on the median.
 
 ### Performance
 
