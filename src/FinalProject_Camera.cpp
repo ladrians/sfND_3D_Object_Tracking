@@ -381,7 +381,7 @@ int main(int argc, const char *argv[])
 
             } // eof loop over all images
             total_descriptor_detector_t = ((double)cv::getTickCount() - total_descriptor_detector_t) / cv::getTickFrequency();
-            cout << detectorType << "/" << descriptorType << " ImageCount: " << image_count << " " << total_descriptor_detector_t << " seconds" << endl;
+            cout << detectorType << "/" << descriptorType << " ImageCount#" << image_count << " " << total_descriptor_detector_t << " seconds" << endl;
 
         } // eof descriptorType
     } // eof detectorType

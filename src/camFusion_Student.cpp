@@ -260,9 +260,9 @@ void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bb
 {
     int previous_frame_size = prevFrame.boundingBoxes.size();
     int current_frame_size = currFrame.boundingBoxes.size();
-    int match_array[previous_frame_size][current_frame_size];
+    int match_array[previous_frame_size][current_frame_size] = { };
 
-    for (auto it = matches.begin(); it != matches.end() - 1; ++it)
+    for (auto it = matches.begin(); it != matches.end(); ++it)
     {
         bool query_found = false;
         bool train_found = false;
