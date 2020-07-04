@@ -52,7 +52,7 @@ Steps followed:
 
 `FP.3` prepares the TTC computation based on camera measurements by associating keypoint correspondences to the bounding boxes which enclose them. All matches which satisfy this condition are added to a vector in the respective bounding box.
 
-Analyzing the correspondences between images, the detection ranges starting from [7.97m](./images/3d_object_detect01.png) to [6.81m](./images/3d_object_detect03.png); it makes sense as the images show that the behicles are approaching a red semaphore so they are decelerating:
+Analyzing the correspondences between images, the detection ranges starting from [7.97m](./images/3d_object_detect01.png) to [6.81m](./images/3d_object_detect03.png); it makes sense as the images show that the vehicles are approaching a red semaphore so they are decelerating:
 
 ![3D object detection](./images/3d_object_detect02.png)
 
@@ -65,7 +65,7 @@ Based on section `06.04`:
 
 ### Compute Camera-based TTC
 
-`FP.4` compute the time-to-collision in second for all matched 3D objects using only keypoint correspondences from the matched bounding boxes between current and previous frame.
+`FP.4` computes the time-to-collision in second for all matched 3D objects using only keypoint correspondences from the matched bounding boxes between current and previous frame.
 
 Based on section `03.03`:
 
@@ -79,17 +79,35 @@ Based on section `03.03`:
 
 The algorithms were tested in different combinations and compared with regard to some performance measures.
 
+The detailed execution between a combination of `descriptor` / `detector` can be checked and compared on the [report.csv](report.csv) file and resulting images with the pattern `descriptor_detector_imagenumber.png` saved on the [images](images) folder. The [report.xlsx](report.xlsx) file calculates average values and generates the associated graphs.
+
 #### Evaluation 1
 
-`FP.5` Find examples where the TTC estimate of the Lidar sensor does not seem plausible. Describe your observations and provide a sound argumentation why you think this happened.
+`FP.5` finds examples where the TTC estimate of the Lidar sensor does not seem plausible. From the previous section analysis, it is clear that the vehicles are approaching a red semaphore so the TTC (frames 01-18) must decrease because of desaceleration.
 
-Several examples (2-3) have been identified and described in detail. The assertion that the TTC is off has been based on manually estimating the distance to the rear of the preceding vehicle from a top view perspective of the Lidar points.
+The following frames detail wrong measurement for Lidar TTC values, there was an increase in TTC Lidar calculation between consecutive frames (frames #3 and #17).
+
+|Detector/Descriptor|Image #|Lidar TTC|
+|---|---|---|
+|SHITOMASI/BRISK|[0003](./images/SHITOMASI_BRISK_0003.png)|16.3845|
+|SHITOMASI/BRIEF|[0003](./images/SHITOMASI_BRIEF_0003.png)|16.3845|
+|SHITOMASI/ORB|[0003](./images/SHITOMASI_ORB_0003.png)|16.3845|
+|AKAZE/AKAZE|[0017](./images/AKAZE_AKAZE_0017.png)|11.0301|
+|SIFT/FREAK|[0017](./images/SIFT_FREAK_0017.png)|11.0301|
+|SIFT/ORB|[0017](./images/SIFT_ORB_0017.png)|11.0301|
 
 #### Evaluation 2
 
-`FP.6` Run several detector / descriptor combinations and look at the differences in TTC estimation. Find out which methods perform best and also include several examples where camera-based TTC estimation is way off. As with Lidar, describe your observations again and also look into potential reasons.
+`FP.6` runs several `detector` / `descriptor` combinations implemented in previous chapters and compares with regard to the TTC estimate on a frame-by-frame basis. A resume on the execution can be checked on the [report.xlsx](report.xlsx) file; the average values can be sumarized on the following radar graph:
 
-All detector / descriptor combinations implemented in previous chapters have been compared with regard to the TTC estimate on a frame-by-frame basis. To facilitate comparison, a spreadsheet and graph should be used to represent the different TTCs.
+![average by detector descriptor](./images/detector_descriptor_averages.png)
+
+Lidar based computation shows that it is stable while camera-based TTC estimation is very bad in some combinations getting wrong values such as: negative values, `-INF` and `NAN`.
+
+I would select the following combinations as best options because they are closer to the lidar TTC average measurements (which are more stable):
+
+ * `SIFT/SIFT`, `SIFT/FREAK`
+ * `FAST/BRIEF`, `FAST/BRISK`
 
 ### Links
 
@@ -98,37 +116,37 @@ All detector / descriptor combinations implemented in previous chapters have bee
 
 ### Appendix
 
-Detailed execution by descriptor / detector can be checked on the [images folder](./data/).
+Detailed execution by `descriptor` / `detector` can be checked on the [images folder](./data/), some sample for image #0016 detailed below:
 
 |Detector/Descriptor|Camera TTC|Lidar TTC|Image sample|
 |---|---|---|---|
-|SHITOMASI/BRISK|8.898673|10.845162|[sample](./images/SHITOMASI_BRISK_0016.png)|
-|SHITOMASI/BRIEF|8.898673|11.795735|[sample](./images/SHITOMASI_BRIEF_0016.png)|
-|SHITOMASI/ORB|8.898673|11.203624|[sample](./images/SHITOMASI_ORB_0016.png)|
-|SHITOMASI/FREAK|8.898673|10.716109|[sample](./images/SHITOMASI_FREAK_0016.png)|
-|SHITOMASI/SIFT|8.898673|10.210745|[sample](./images/SHITOMASI_SIFT_0016.png)|
-|HARRIS/BRISK|8.898673|6.338662|[sample](./images/HARRIS_BRISK_0016.png)|
-|HARRIS/BRIEF|8.898673|7.291746|[sample](./images/HARRIS_BRIEF_0016.png)|
-|HARRIS/ORB|8.898673|6.603384|[sample](./images/HARRIS_ORB_0016.png)|
-|HARRIS/FREAK|8.898673|6.457490|[sample](./images/HARRIS_FREAK_0016.png)|
-|HARRIS/SIFT|8.898673|7.291746|[sample](./images/HARRIS_SIFT_0016.png)|
-|FAST/BRISK|8.898673|11.487338|[sample](./images/FAST_BRISK_0016.png)|
-|FAST/BRIEF|8.898673|11.218021|[sample](./images/FAST_BRIEF_0016.png)|
-|FAST/ORB|8.898673|11.220639|[sample](./images/FAST_ORB_0016.png)|
-|FAST/FREAK|8.898673|12.261320|[sample](./images/FAST_FREAK_0016.png)|
-|FAST/SIFT|8.898673|11.214223|[sample](./images/FAST_SIFT_0016.png)|
-|BRISK/BRISK|8.898673|10.804131|[sample](./images/BRISK_BRISK_0016.png)|
-|BRISK/BRIEF|8.898673|9.468606|[sample](./images/BRISK_BRIEF_0016.png)|
-|BRISK/ORB|8.898673|10.458415|[sample](./images/BRISK_ORB_0016.png)|
-|BRISK/FREAK|8.898673|9.851232|[sample](./images/BRISK_FREAK_0016.png)|
-|BRISK/SIFT|8.898673|10.956527|[sample](./images/BRISK_SIFT_0016.png)|
-|ORB/BRISK|8.898673|9.760500|[sample](./images/ORB_BRISK_0016.png)|
-|ORB/BRIEF|8.898673|12.709675|[sample](./images/ORB_BRIEF_0016.png)|
-|ORB/ORB|8.898673|9.370819|[sample](./images/ORB_ORB_0016.png)|
-|ORB/FREAK|8.898673|7.318464|[sample](./images/ORB_FREAK_0016.png)|
-|ORB/SIFT|8.898673|8.345127|[sample](./images/ORB_SIFT_0016.png)|
-|AKAZE/AKAZE|8.898673|9.101661|[sample](./images/AKAZE_AKAZE_0016.png)|
-|SIFT/BRISK|8.898673|8.710034|[sample](./images/SIFT_BRISK_0016.png)|
-|SIFT/BRIEF|8.898673|9.090199|[sample](./images/SIFT_BRIEF_0016.png)|
-|SIFT/FREAK|8.898673|8.520908|[sample](./images/SIFT_FREAK_0016.png)|
-|SIFT/SIFT|8.898673|8.944497|[sample](./images/SIFT_SIFT_0016.png)|
+|SHITOMASI/BRISK|8.898673|10.845162|[sample #16](./images/SHITOMASI_BRISK_0016.png)|
+|SHITOMASI/BRIEF|8.898673|11.795735|[sample #16](./images/SHITOMASI_BRIEF_0016.png)|
+|SHITOMASI/ORB|8.898673|11.203624|[sample #16](./images/SHITOMASI_ORB_0016.png)|
+|SHITOMASI/FREAK|8.898673|10.716109|[sample #16](./images/SHITOMASI_FREAK_0016.png)|
+|SHITOMASI/SIFT|8.898673|10.210745|[sample #16](./images/SHITOMASI_SIFT_0016.png)|
+|HARRIS/BRISK|8.898673|6.338662|[sample #16](./images/HARRIS_BRISK_0016.png)|
+|HARRIS/BRIEF|8.898673|7.291746|[sample #16](./images/HARRIS_BRIEF_0016.png)|
+|HARRIS/ORB|8.898673|6.603384|[sample #16](./images/HARRIS_ORB_0016.png)|
+|HARRIS/FREAK|8.898673|6.457490|[sample #16](./images/HARRIS_FREAK_0016.png)|
+|HARRIS/SIFT|8.898673|7.291746|[sample #16](./images/HARRIS_SIFT_0016.png)|
+|FAST/BRISK|8.898673|11.487338|[sample #16](./images/FAST_BRISK_0016.png)|
+|FAST/BRIEF|8.898673|11.218021|[sample #16](./images/FAST_BRIEF_0016.png)|
+|FAST/ORB|8.898673|11.220639|[sample #16](./images/FAST_ORB_0016.png)|
+|FAST/FREAK|8.898673|12.261320|[sample #16](./images/FAST_FREAK_0016.png)|
+|FAST/SIFT|8.898673|11.214223|[sample #16](./images/FAST_SIFT_0016.png)|
+|BRISK/BRISK|8.898673|10.804131|[sample #16](./images/BRISK_BRISK_0016.png)|
+|BRISK/BRIEF|8.898673|9.468606|[sample #16](./images/BRISK_BRIEF_0016.png)|
+|BRISK/ORB|8.898673|10.458415|[sample #16](./images/BRISK_ORB_0016.png)|
+|BRISK/FREAK|8.898673|9.851232|[sample #16](./images/BRISK_FREAK_0016.png)|
+|BRISK/SIFT|8.898673|10.956527|[sample #16](./images/BRISK_SIFT_0016.png)|
+|ORB/BRISK|8.898673|9.760500|[sample #16](./images/ORB_BRISK_0016.png)|
+|ORB/BRIEF|8.898673|12.709675|[sample #16](./images/ORB_BRIEF_0016.png)|
+|ORB/ORB|8.898673|9.370819|[sample #16](./images/ORB_ORB_0016.png)|
+|ORB/FREAK|8.898673|7.318464|[sample #16](./images/ORB_FREAK_0016.png)|
+|ORB/SIFT|8.898673|8.345127|[sample #16](./images/ORB_SIFT_0016.png)|
+|AKAZE/AKAZE|8.898673|9.101661|[sample #16](./images/AKAZE_AKAZE_0016.png)|
+|SIFT/BRISK|8.898673|8.710034|[sample #16](./images/SIFT_BRISK_0016.png)|
+|SIFT/BRIEF|8.898673|9.090199|[sample #16](./images/SIFT_BRIEF_0016.png)|
+|SIFT/FREAK|8.898673|8.520908|[sample #16](./images/SIFT_FREAK_0016.png)|
+|SIFT/SIFT|8.898673|8.944497|[sample #16](./images/SIFT_SIFT_0016.png)|
