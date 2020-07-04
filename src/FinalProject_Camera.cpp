@@ -109,10 +109,9 @@ int main(int argc, const char *argv[])
     vector<string> detector_types = {"SHITOMASI", "HARRIS", "FAST", "BRISK", "ORB", "AKAZE", "SIFT"};
     vector<string> descriptor_types = {"BRISK", "BRIEF", "ORB", "FREAK", "AKAZE", "SIFT"};
 
-    //// Use for debugging a specific detector/descriptor combination
+    //// Use for debugging a specific detector/descriptor/image combination
     //detector_types = {"AKAZE"};
     //descriptor_types = {"AKAZE"};
-    //// Debug a specific image
     //imgStartIndex = 12;
     //imgEndIndex = 13;
 
