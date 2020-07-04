@@ -94,7 +94,6 @@ The following frames detail wrong measurement for Lidar TTC values, there was an
 |SHITOMASI/ORB|[0003](./images/SHITOMASI_ORB_0003.png)|16.3845|
 |AKAZE/AKAZE|[0017](./images/AKAZE_AKAZE_0017.png)|11.0301|
 |SIFT/FREAK|[0017](./images/SIFT_FREAK_0017.png)|11.0301|
-|SIFT/ORB|[0017](./images/SIFT_ORB_0017.png)|11.0301|
 
 #### Evaluation 2
 
