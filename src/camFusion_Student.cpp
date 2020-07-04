@@ -241,7 +241,7 @@ void computeTTCLidar(std::vector<LidarPoint> &lidarPointsPrev,
 }
 
 
-static bool filter_box(DataFrame &frame, int idx, std::vector<int> &ids, bool found)
+static bool filter_box(DataFrame &frame, int idx, std::vector<int> &ids, bool &found)
 {
     int frame_size = frame.boundingBoxes.size();
     cv::KeyPoint point = frame.keypoints[idx];
@@ -262,7 +262,7 @@ void matchBoundingBoxes(std::vector<cv::DMatch> &matches, std::map<int, int> &bb
     int current_frame_size = currFrame.boundingBoxes.size();
     int match_array[previous_frame_size][current_frame_size];
 
-    for (auto it = matches.begin(); it != matches.end(); ++it)
+    for (auto it = matches.begin(); it != matches.end() - 1; ++it)
     {
         bool query_found = false;
         bool train_found = false;

@@ -94,11 +94,17 @@ int main(int argc, const char *argv[])
 
     // misc
     double sensorFrameRate = 10.0 / imgStepWidth; // frames per second for Lidar and camera
-    int dataBufferSize = 3;//2; // no. of images which are held in memory (ring buffer) at the same time
+    int dataBufferSize = 2; // no. of images which are held in memory (ring buffer) at the same time
     vector<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
     bool bVis = false;            // visualize results
-    bool bSaveFile = false; // Save output to file
+    bool bSaveFile = true; // Save output to file
+    bool bSaveAllFiles = true; // Save output to file
     string imgSaveBasePath = imgBasePath;
+    string separator = ",";
+    string report_name = "../report.csv";
+
+    std::ofstream report_file(report_name);
+    report_file << "Detector,Descriptor,ImgNumber,TTC_Lidar,TTC_Camera" << endl; // Header
 
     vector<string> detector_types = {"SHITOMASI", "HARRIS", "FAST", "BRISK", "ORB", "AKAZE", "SIFT"};
     vector<string> descriptor_types = {"BRISK", "BRIEF", "ORB", "FREAK", "AKAZE", "SIFT"};
@@ -117,7 +123,8 @@ int main(int argc, const char *argv[])
         for (string descriptorType:descriptor_types)
         {
             dataBuffer.clear();
-            cout << detectorType << "/" << descriptorType << endl;
+            double total_descriptor_detector_t = (double)cv::getTickCount();
+            int image_count = 0;
 
             /* MAIN LOOP OVER ALL IMAGES */
 
@@ -327,6 +334,7 @@ int main(int argc, const char *argv[])
                             }
                         }
 
+                        //cout << "#9 : LIDAR Points (" << currBB->lidarPoints.size() << "," << prevBB->lidarPoints.size() << ")" << endl;
                         // compute TTC for current match
                         if( currBB->lidarPoints.size()>0 && prevBB->lidarPoints.size()>0 ) // only compute TTC if we have Lidar points
                         {
@@ -344,7 +352,10 @@ int main(int argc, const char *argv[])
                             computeTTCCamera((dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints, currBB->kptMatches, sensorFrameRate, ttcCamera);
                             //// EOF STUDENT ASSIGNMENT
 
+                            report_file << detectorType << separator << descriptorType  << separator << imgNumber.str() << separator << ttcLidar << separator << ttcCamera << endl;
+
                             //bVis = true;
+                            image_count++;
                             if (bVis)
                             {
                                 cv::Mat visImg = (dataBuffer.end() - 1)->cameraImg.clone();
@@ -363,15 +374,20 @@ int main(int argc, const char *argv[])
                                 AnnotateImage(visImg, currBB, P_rect_00, R_rect_00, RT, ttcLidar, ttcCamera);
                                 SaveImage(visImg, detectorType, descriptorType, imgSaveBasePath, imgNumber.str(), imgFileType);
                             }
-                            bSaveFile = false; // Save only 1 image by detector/descriptor combination
+                            if (!bSaveAllFiles) bSaveFile = false; // Save only 1 image by detector/descriptor combination
                         } // eof TTC computation
                     } // eof loop over all BB matches
 
                 }
 
             } // eof loop over all images
+            total_descriptor_detector_t = ((double)cv::getTickCount() - total_descriptor_detector_t) / cv::getTickFrequency();
+            cout << detectorType << "/" << descriptorType << " ImageCount: " << image_count << " " << total_descriptor_detector_t << " seconds" << endl;
+
         } // eof descriptorType
     } // eof detectorType
+
+    report_file.close();
 
     total_t = ((double)cv::getTickCount() - total_t) / cv::getTickFrequency();
     cout << "Time " << total_t << " seconds" << endl;
